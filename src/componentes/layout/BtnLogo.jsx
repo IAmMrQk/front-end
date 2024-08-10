@@ -2,7 +2,7 @@ export default function BtnLogo() {
   return (
     <div className="flex">
       <a href="/" className="mx-3">
-        Logotipo
+        <img src="./logo principal.png" alt="logo" width={"100px"} />
       </a>
     </div>
   );

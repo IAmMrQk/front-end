@@ -32,8 +32,8 @@ export const Inicio = () => {
               </p>
             </div>
           </div>
-          <div className="w-1/2 h-auto bg-slate-950 flex items-center justify-center m-2">
-            <p className="text-slate-50"> Img</p>
+          <div className="w-1/2 h-auto flex items-center justify-center m-2">
+            <img src="./Logotiponegro.png" alt="logo" width={"650px"} />
           </div>
         </section>
       </main>
