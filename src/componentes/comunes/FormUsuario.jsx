@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Nav from "../layout/Nav";
 
 export default function FormUsuario({ tipoUsuario }) {
   const [verContraseña, setVerContraseña] = useState(false);
@@ -58,7 +57,6 @@ export default function FormUsuario({ tipoUsuario }) {
   };
   return (
     <div className="flex items-center justify-center bg-gray-100">
-      <Nav/>
       <form
         onSubmit={enviarDatos}
         className="w-full max-w-3xl bg-white p-6 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4"
