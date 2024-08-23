@@ -47,6 +47,7 @@ export const EstudianteSlice = createSlice({
 
       console.log("Estudiante activado" + estudiante);
     },
+
   },
 });
 

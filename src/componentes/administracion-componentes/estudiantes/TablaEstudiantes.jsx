@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { activarEstudiante } from "../../../app/slices/EstudiantesSlice";
+import { activarEstudiante} from "../../../app/slices/EstudiantesSlice";
 import { FaArrowsRotate } from "react-icons/fa6";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@mui/material";
