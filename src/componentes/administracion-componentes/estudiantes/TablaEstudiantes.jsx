@@ -28,7 +28,7 @@ export default function TablaEstudiantes() {
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
-          <thead className="bg-blue-600 text-white">
+          <thead className="bg-blue-900 text-white">
             <tr>
               <th className="px-4 py-3 border-b border-gray-300 text-left">
                 ID
