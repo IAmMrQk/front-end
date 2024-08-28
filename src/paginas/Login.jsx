@@ -1,19 +1,20 @@
 import { useState } from "react";
 import NavLogin from "../componentes/layout/NavLogin";
-import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { iniciarSesion } from "../app/slices/AutentificacionSlice";
 
 export default function Login() {
-  const users = [
-    { username: "admin", password: "admin123", userType: "admin" },
-    { username: "user", password: "user123", userType: "user" },
-  ];
+  const dispatch = useDispatch((state) => state.autentificacion);
 
-  const [user, setUser] = useState({ userLogger: "", contrasena: "" });
-  let navigate = useNavigate();
+  const [credenciales, setcredenciales] = useState({
+    usuario: "",
+    contrasena: "",
+  });
+  //let navigate = useNavigate();
 
   const obtenerDatos = (e) => {
     const { name, value } = e.target;
-    setUser((prevState) => ({
+    setcredenciales((prevState) => ({
       ...prevState,
       [name]: value,
     }));
@@ -21,29 +22,8 @@ export default function Login() {
 
   const inicioSesion = (e) => {
     e.preventDefault();
-    const { userLogger, contrasena } = user;
-
-    console.log(userLogger, contrasena);
-
-    const usuarioValido = users.find(
-      (usuario) =>
-        usuario.username === userLogger && usuario.password === contrasena
-    );
-
-    console.log(usuarioValido);
-
-    if (usuarioValido) {
-      if (usuarioValido.userType === "admin") {
-        console.log("Usuario admin");
-        navigate("/Admin");
-      } else if (usuarioValido.userType === "user") {
-        console.log("Usuario user");
-        navigate("/Estudiantes");
-      }
-    } else {
-      console.log("Usuario no válido");
-      console.log(usuarioValido);
-    }
+    const { usuario, contrasena } = credenciales;
+    dispatch(iniciarSesion({ usuario, contrasena }));
   };
 
   return (
@@ -57,15 +37,15 @@ export default function Login() {
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="username"
+              htmlFor="credenciales"
             >
               Usuario
             </label>
             <input
               type="text"
-              id="username"
-              name="userLogger"
-              value={user.userLogger}
+              id="usuario"
+              name="usuario"
+              value={credenciales.usuario}
               onChange={obtenerDatos}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               required
@@ -82,7 +62,7 @@ export default function Login() {
               type="password"
               id="password"
               name="contrasena"
-              value={user.contrasena}
+              value={credenciales.contrasena}
               onChange={obtenerDatos}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
               required

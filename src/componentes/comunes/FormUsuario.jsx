@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { guardarEstudiante } from "../../app/slices/EstudiantesSlice";
 
 export default function FormUsuario({ tipoUsuario }) {
+  const dispatch = useDispatch((state) => state.estudiantes);
   const [verContraseña, setVerContraseña] = useState(false);
   const [errorContraseña, setErrorContraseña] = useState("");
   const [errorSemestre, setErrorSemestre] = useState();
@@ -11,18 +14,36 @@ export default function FormUsuario({ tipoUsuario }) {
     nombreUsuario: "",
     telefono: "",
     contraseña: "",
-    carrera: "",
+    carrera: { idCarrera: "" },
     semestre: tipoUsuario === "estudiante" ? "" : undefined,
   });
 
   const enviarDatos = (evento) => {
     evento.preventDefault();
-    console.log(formUsuario);
+    dispatch(guardarEstudiante(formUsuario));
   };
 
   const manejoDatos = (e) => {
     const { name, value } = e.target;
-    setFormUsuario({ ...formUsuario, [name]: value });
+
+    // Actualiza el estado de formUsuario según el nombre del campo
+    setFormUsuario((prevForm) => {
+      if (name === "carrera") {
+        // Si el campo es 'carrera', actualiza el idCarrera dentro del objeto carrera
+        return {
+          ...prevForm,
+          carrera: {
+            ...prevForm.carrera,
+            idCarrera: value,
+          },
+        };
+      }
+
+      return {
+        ...prevForm,
+        [name]: value,
+      };
+    });
 
     if (name === "semestre") {
       validacionSemestre(Number(value));
@@ -146,7 +167,7 @@ export default function FormUsuario({ tipoUsuario }) {
           <input
             type="text"
             name="carrera"
-            value={formUsuario.carrera}
+            value={formUsuario.carrera.idCarrera}
             onChange={manejoDatos}
             className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
           />

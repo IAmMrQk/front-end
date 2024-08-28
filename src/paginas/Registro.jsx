@@ -4,6 +4,14 @@ import NavRegister from "../componentes/layout/NavRegister";
 import ModalCedula from "../componentes/estudiantes/ModalCedula";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  CircularProgress,
+  DialogActions,
+  Button,
+} from "@mui/material";
 
 export default function Registro() {
   const [tipoUsuario, setTipoUsuario] = useState("estudiante");
@@ -20,7 +28,12 @@ export default function Registro() {
     matricula: "",
   });
 
-  let navigation = useNavigate();
+  // Estados para manejar el Dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const renderizarComponentes = () => {
     switch (tipoUsuario) {
@@ -43,6 +56,10 @@ export default function Registro() {
   };
 
   const fetchEstudiante = async (cedula) => {
+    setIsLoading(true);
+    setDialogOpen(true);
+    setDialogMessage("Validando estudiante...");
+
     try {
       const response = await axios.get(
         `http://localhost:8080/api/dataUniversidad/existencia?cedula=${cedula}`
@@ -51,26 +68,37 @@ export default function Registro() {
       validateEstudiante(response.data);
     } catch (error) {
       console.error("Error fetching estudiante:", error);
+      setDialogMessage("Error al validar el estudiante.");
+      navigate("/");
+      setIsLoading(false);
     }
   };
 
   const validateEstudiante = (estudiante) => {
+    setIsLoading(false);
     if (estudiante.matricula) {
-      alert("El estudiante se encuentra matriculado en la base de datos");
+      setDialogMessage(
+        "El estudiante se encuentra matriculado en la base de datos"
+      );
     } else {
-      alert("El estudiante no se encuentra matriculado en la base de datos");
-      navigation("/");
+      setDialogMessage(
+        "El estudiante no se encuentra matriculado en la base de datos"
+      );
+      setTimeout(() => navigate("/"), 2000); // Navega después de 2 segundos
     }
   };
 
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
   useEffect(() => {
-    // Abre el modal si el tipo de usuario es "estudiante" (puedes ajustar la condición según tus necesidades)
     if (tipoUsuario === "estudiante") {
       setIsModalOpen(true);
     } else {
       setIsModalOpen(false);
     }
-  }, []);
+  }, [tipoUsuario]);
 
   return (
     <div>
@@ -124,6 +152,29 @@ export default function Registro() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
       />
+
+      {/* Dialog */}
+      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+        <DialogContent>
+          <DialogContentText>
+            {isLoading ? (
+              <div className="flex items-center">
+                <CircularProgress size={24} className="mr-2" />
+                {dialogMessage}
+              </div>
+            ) : (
+              dialogMessage
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          {!isLoading && (
+            <Button onClick={handleDialogClose} color="primary">
+              Cerrar
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
