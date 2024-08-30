@@ -1,16 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
-import { activarEstudiante} from "../../../app/slices/EstudiantesSlice";
+import { activarEstudiante } from "../../../app/slices/EstudiantesSlice";
 import { FaArrowsRotate } from "react-icons/fa6";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@mui/material";
+import { setEstudiantes } from "../../../app/slices/EstudiantesSlice";
+import axios from "axios";
 
 export default function TablaEstudiantes() {
-  const estudiantes = useSelector((state) => state.estudiantes);
+  const estudiantes = useSelector((state) => state.estudiantes.list);
   const disparador = useDispatch();
   const [openDialog, setOpenDialog] = useState(false);
 
   const handleToggleActive = (id) => {
-    
     setOpenDialog(true);
 
     setTimeout(() => {
@@ -19,6 +20,20 @@ export default function TablaEstudiantes() {
       disparador(activarEstudiante(id));
     }, 3000);
   };
+
+  useEffect(() => {
+    const fetchEstudiantes = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/api/Estudiantes/Lista_Estudiantes"
+        );
+        disparador(setEstudiantes(response.data));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchEstudiantes();
+  }, [disparador]);
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
@@ -91,48 +106,21 @@ export default function TablaEstudiantes() {
                 </td>
                 <td className="px-4 py-3 border-b border-gray-300 flex items-center">
                   <p>{estudiante.activo ? "Sí" : "No"}</p>
-                  <div>
-                    <button
-                      className={`p-2 rounded-xl m-2 ${
-                        estudiante.activo
-                          ? "bg-red-500 text-white"
-                          : "bg-green-700 text-white"
-                      }`}
-                      onClick={() => handleToggleActive(estudiante.id)}
-                    >
-                      <FaArrowsRotate size={20} />
-                    </button>
-
-                    <Dialog
-                      open={openDialog}
-                      onClose={() => setOpenDialog(false)}
-                      fullWidth
-                      maxWidth="sm"
-                      PaperProps={{
-                        sx: {
-                          padding: "20px",
-                          borderRadius: "12px",
-                          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
-                        },
-                      }}
-                    >
-                      <DialogTitle className="font-bold text-center text-lg">
-                        Esto tomará unos segundos...
-                      </DialogTitle>
-                      <DialogContent className="flex flex-col items-center justify-center min-h-[100px]">
-                        <div className="flex items-center justify-center mb-4">
-                          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
-                        </div>
-                        <p className="text-center text-gray-700">
-                          Cambiando el estado del estudiante...
-                        </p>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+                  <button
+                    className={`p-2 rounded-xl m-2 ${
+                      estudiante.activo
+                        ? "bg-red-500 text-white"
+                        : "bg-green-700 text-white"
+                    }`}
+                    onClick={() => handleToggleActive(estudiante.id)}
+                  >
+                    <FaArrowsRotate size={20} />
+                  </button>
                 </td>
-
                 <td className="px-4 py-3 border-b border-gray-300">
-                  {estudiante.carrera || "N/A"}
+                  {estudiante.carrera
+                    ? estudiante.carrera.nombreCarrera
+                    : "N/A"}
                 </td>
                 <td className="px-4 py-3 border-b border-gray-300">
                   {estudiante.rol}
@@ -143,13 +131,39 @@ export default function TablaEstudiantes() {
                 <td className="px-4 py-3 border-b border-gray-300">
                   {estudiante.cursos.length > 0
                     ? estudiante.cursos.join(", ")
-                    : "N/A"}
+                    : "Sin agregar"}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+          },
+        }}
+      >
+        <DialogTitle className="font-bold text-center text-lg">
+          Esto tomará unos segundos...
+        </DialogTitle>
+        <DialogContent className="flex flex-col items-center justify-center min-h-[100px]">
+          <div className="flex items-center justify-center mb-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+          </div>
+          <p className="text-center text-gray-700">
+            Cambiando el estado del estudiante...
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

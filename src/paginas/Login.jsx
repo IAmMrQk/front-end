@@ -1,49 +1,63 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NavLogin from "../componentes/layout/NavLogin";
 import { useDispatch } from "react-redux";
 import { iniciarSesion } from "../app/slices/AutentificacionSlice";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Snackbar, Alert } from "@mui/material";
+import { getItem } from "../utils/Services";
 
 export default function Login() {
-  const dispatch = useDispatch((state) => state.autentificacion);
+  let navigate = useNavigate();
+  useEffect(() => {
+    const user = getItem("user");
+    if (user != null) {
+      navigate("/Estudiantes"); // Redireccionar si no hay usuario
+    }
+  }, [navigate]);
 
-  const [credenciales, setcredenciales] = useState({
-    usuario: "",
-    contrasena: "",
+
+  const dispatch = useDispatch();
+ 
+
+  const [credenciales, setCredenciales] = useState({
+    nombreUsuario: "",
+    contraseña: "",
   });
-  //let navigate = useNavigate();
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const obtenerDatos = (e) => {
     const { name, value } = e.target;
-    setcredenciales((prevState) => ({
+    setCredenciales((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
 
-  const inicioSesion = (e) => {
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const inicioSesion = async (e) => {
     e.preventDefault();
-    const { userLogger, contrasena } = user;
-
-    console.log(userLogger, contrasena);
-
-    const usuarioValido = users.find(
-      (usuario) =>
-        usuario.username === userLogger && usuario.password === contrasena
-    );
-
-    console.log(usuarioValido);
-
-    if (usuarioValido) {
-      if (usuarioValido.userType === "admin") {
-        console.log("Usuario admin");
-        navigate("/Admin");
-      } else if (usuarioValido.userType === "user") {
-        console.log("Usuario user");
-        navigate("/Estudiantes");
-      }
-    } else {
-      console.log("Usuario no válido");
-      console.log(usuarioValido);
+    const { nombreUsuario, contraseña } = credenciales;
+    try {
+      const respuesta = await axios.post(
+        "http://localhost:8080/api/Estudiantes/estudiante_Login",
+        { nombreUsuario, contraseña }
+      );
+      setSnackbarMessage("Inicio de sesión exitoso");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      dispatch(iniciarSesion({ user: respuesta.data }));
+      navigate("/Estudiantes");
+    } catch (error) {
+      setSnackbarMessage("Usuario o contraseña incorrectos");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -58,15 +72,15 @@ export default function Login() {
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="username"
+              htmlFor="nombreUsuario"
             >
-              Usuario
+              Nombre de Usuario
             </label>
             <input
               type="text"
-              id="usuario"
-              name="usuario"
-              value={credenciales.usuario}
+              id="nombreUsuario"
+              name="nombreUsuario"
+              value={credenciales.nombreUsuario}
               onChange={obtenerDatos}
               className="shadow-sm border border-gray-300 rounded w-full py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:border-blue-500"
               required
@@ -75,15 +89,15 @@ export default function Login() {
           <div className="mb-6">
             <label
               className="block text-gray-800 text-sm font-semibold mb-2"
-              htmlFor="password"
+              htmlFor="contraseña"
             >
               Contraseña
             </label>
             <input
               type="password"
-              id="password"
-              name="contrasena"
-              value={credenciales.contrasena}
+              id="contraseña"
+              name="contraseña"
+              value={credenciales.contraseña}
               onChange={obtenerDatos}
               className="shadow-sm border border-gray-300 rounded w-full py-2 px-3 text-gray-800 mb-3 leading-tight focus:outline-none focus:border-blue-500"
               required
@@ -99,6 +113,22 @@ export default function Login() {
           </div>
         </form>
       </div>
+
+      {/* Snackbar for alerts */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

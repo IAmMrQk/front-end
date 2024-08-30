@@ -1,4 +1,4 @@
-import { format } from "date-fns"; // Asegúrate de que date-fns esté instalado
+/* eslint-disable react/prop-types */
 
 export default function CartaCurso({ curso }) {
   const editarCurso = (id) => {
@@ -15,12 +15,10 @@ export default function CartaCurso({ curso }) {
           <strong>ID:</strong> {curso.idCurso}
         </p>
         <p className="text-gray-600 mb-2">
-          <strong>Fecha de Inicio:</strong>{" "}
-          {format(curso.fechaInicio, "dd MMM yyyy")}
+          <strong>Fecha de Inicio:</strong> {curso.fecheInicio}
         </p>
         <p className="text-gray-600 mb-2">
-          <strong>Fecha de Finalización:</strong>{" "}
-          {format(curso.fechaFinalizacion, "dd MMM yyyy")}
+          <strong>Fecha de Finalización:</strong> {curso.fechaFinalizacion}
         </p>
         <p className="text-gray-600 mb-2">
           <strong>Semestre:</strong> {curso.semestreCurso}

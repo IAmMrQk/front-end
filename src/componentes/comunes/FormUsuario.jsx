@@ -1,44 +1,60 @@
-import { useState } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { guardarEstudiante } from "../../app/slices/EstudiantesSlice";
+import { getItem } from "../../utils/Services";
 
-export default function FormUsuario({ tipoUsuario }) {
-  const dispatch = useDispatch((state) => state.estudiantes);
+export default function FormUsuario({ tipoUsuario, estudianteDB }) {
+  const dispatch = useDispatch();
+  const carreras = getItem("carreras");
   const [verContraseña, setVerContraseña] = useState(false);
   const [errorContraseña, setErrorContraseña] = useState("");
-  const [errorSemestre, setErrorSemestre] = useState();
-  const [formUsuario, setFormUsuario] = useState({
+  const [errorSemestre, setErrorSemestre] = useState("");
+  const [formEstudiante, setFormEstudiante] = useState({
     nombre: "",
     apellido: "",
     correo: "",
     nombreUsuario: "",
     telefono: "",
+    cedula: "",
     contraseña: "",
+    activo: false,
+    rol: 1,
     carrera: { idCarrera: "" },
     semestre: tipoUsuario === "estudiante" ? "" : undefined,
   });
 
-  const enviarDatos = (evento) => {
-    evento.preventDefault();
-    dispatch(guardarEstudiante(formUsuario));
+  //Función para mostrar u ocultar la contraseña
+  const mostrarContraseña = () => {
+    setVerContraseña(!verContraseña);
   };
 
+  //Función para validar la contraseña
+  const validacionContraseña = (contraseña) => {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!regex.test(contraseña)) {
+      setErrorContraseña(
+        "La contraseña debe tener al menos 8 caracteres, incluyendo letras y números."
+      );
+    } else {
+      setErrorContraseña("");
+    }
+  };
+
+  //Función para validar el semestre
+  const validacionSemestre = (semestre) => {
+    if (semestre < 1 || semestre > 12) {
+      setErrorSemestre("El semestre debe estar entre 1 y 12");
+    } else {
+      setErrorSemestre("");
+    }
+  };
+
+  //Función para manejar los datos del formulario
   const manejoDatos = (e) => {
     const { name, value } = e.target;
 
-    // Actualiza el estado de formUsuario según el nombre del campo
-    setFormUsuario((prevForm) => {
-      if (name === "carrera") {
-        // Si el campo es 'carrera', actualiza el idCarrera dentro del objeto carrera
-        return {
-          ...prevForm,
-          carrera: {
-            ...prevForm.carrera,
-            idCarrera: value,
-          },
-        };
-      }
-
+    setFormEstudiante((prevForm) => {
       return {
         ...prevForm,
         [name]: value,
@@ -54,28 +70,59 @@ export default function FormUsuario({ tipoUsuario }) {
     }
   };
 
-  const mostrarContraseña = () => {
-    setVerContraseña(!verContraseña);
+  // Función para validar la carrera
+  const validarCarrera = (nombreCarrera) => {
+    if (nombreCarrera === "") {
+      return null;
+    }
+
+    const carrera = carreras.find(
+      (carrera) => carrera.nombreCarrera === nombreCarrera
+    );
+    return carrera ? carrera.idCarrera : null;
   };
 
-  const validacionSemestre = (semestre) => {
-    if (semestre < 0 || semestre > 12) {
-      setErrorSemestre("El semestre debe estar entre 1 y 12");
+  // Función para enviar los datos del formulario
+  const enviarDatos = (evento) => {
+    evento.preventDefault();
+
+    // Validar la carrera y obtener el idCarrera
+    const id = validarCarrera(formEstudiante.carrera.idCarrera);
+
+    // Si no hay error de contraseña y la carrera es válida
+    if (!errorContraseña && id) {
+      const estudiante = {
+        ...formEstudiante,
+        carrera: {
+          idCarrera: id,
+        },
+      };
+      console.log("Estudiante a guardar", estudiante);
+      dispatch(guardarEstudiante(estudiante));
     } else {
-      setErrorSemestre("");
+      console.log("Error en la contraseña o carrera" + id);
     }
   };
 
-  const validacionContraseña = (contraseña) => {
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    if (!regex.test(contraseña)) {
-      setErrorContraseña(
-        "La contraseña debe tener al menos 8 caracteres, incluyendo letras y números."
-      );
-    } else {
-      setErrorContraseña("");
+  useEffect(() => {
+    if (estudianteDB) {
+      setFormEstudiante({
+        nombre: estudianteDB.nombre || "",
+        apellido: estudianteDB.apellido || "",
+        correo: estudianteDB.correo || "",
+        nombreUsuario: "",
+        telefono: estudianteDB.telefono || "",
+        cedula: estudianteDB.cedula || "",
+        contraseña: "",
+        activo: false,
+        rol: 1,
+        carrera: { idCarrera: estudianteDB.carrera || "" },
+        semestre:
+          tipoUsuario === "estudiante" ? estudianteDB.semestre : undefined,
+      });
     }
-  };
+  }, [estudianteDB]);
+
   return (
     <div className="flex items-center justify-center bg-gray-100">
       <form
@@ -83,55 +130,11 @@ export default function FormUsuario({ tipoUsuario }) {
         className="w-full max-w-3xl bg-white p-6 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4"
       >
         <div className="mb-4">
-          <label className="block text-gray-700">Nombre</label>
-          <input
-            type="text"
-            name="nombre"
-            value={formUsuario.nombre}
-            onChange={manejoDatos}
-            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Apellido</label>
-          <input
-            type="text"
-            name="apellido"
-            value={formUsuario.apellido}
-            onChange={manejoDatos}
-            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Correo</label>
-          <input
-            type="email"
-            name="correo"
-            value={formUsuario.correo}
-            onChange={manejoDatos}
-            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
-          />
-        </div>
-
-        <div className="mb-4">
           <label className="block text-gray-700">Nombre de Usuario</label>
           <input
             type="text"
             name="nombreUsuario"
-            value={formUsuario.nombreUsuario}
-            onChange={manejoDatos}
-            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Teléfono</label>
-          <input
-            type="text"
-            name="telefono"
-            value={formUsuario.telefono}
+            value={formEstudiante.nombreUsuario}
             onChange={manejoDatos}
             className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
           />
@@ -143,7 +146,7 @@ export default function FormUsuario({ tipoUsuario }) {
             <input
               type={verContraseña ? "text" : "password"}
               name="contraseña"
-              value={formUsuario.contraseña}
+              value={formEstudiante.contraseña}
               onChange={manejoDatos}
               className={`mt-1 block w-full px-2 py-1 border ${
                 errorContraseña ? "border-red-500" : "border-blue-400"
@@ -163,11 +166,60 @@ export default function FormUsuario({ tipoUsuario }) {
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700">Carrera</label>
+          <label className="block text-gray-700">Nombre</label>
           <input
+            disabled
             type="text"
-            name="carrera"
-            value={formUsuario.carrera.idCarrera}
+            name="nombre"
+            value={formEstudiante.nombre}
+            onChange={manejoDatos}
+            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700">Apellido</label>
+          <input
+            disabled
+            type="text"
+            name="apellido"
+            value={formEstudiante.apellido}
+            onChange={manejoDatos}
+            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700">Correo</label>
+          <input
+            disabled
+            type="email"
+            name="correo"
+            value={formEstudiante.correo}
+            onChange={manejoDatos}
+            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700">Teléfono</label>
+          <input
+            disabled
+            type="text"
+            name="telefono"
+            value={formEstudiante.telefono}
+            onChange={manejoDatos}
+            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700">Cédula</label>
+          <input
+            disabled
+            type="text"
+            name="cedula"
+            value={formEstudiante.cedula}
             onChange={manejoDatos}
             className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
           />
@@ -177,9 +229,10 @@ export default function FormUsuario({ tipoUsuario }) {
           <div className="mb-4">
             <label className="block text-gray-700">Semestre</label>
             <input
+              disabled
               type="number"
               name="semestre"
-              value={formUsuario.semestre}
+              value={formEstudiante.semestre}
               min="0"
               max="12"
               onChange={manejoDatos}
@@ -193,6 +246,18 @@ export default function FormUsuario({ tipoUsuario }) {
             </div>
           </div>
         )}
+
+        <div className="col-span-2 mb-4">
+          <label className="block text-gray-700">Carrera</label>
+          <input
+            disabled
+            type="text"
+            name="carrera"
+            value={formEstudiante.carrera.idCarrera}
+            onChange={manejoDatos}
+            className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
+          />
+        </div>
 
         <div className="col-span-2">
           <button

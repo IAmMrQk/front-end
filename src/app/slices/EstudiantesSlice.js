@@ -4,7 +4,7 @@ import axios from "axios";
 const enviarDatos = async (datos) => {
   try {
     const response = await axios.post(
-      "http://localhost:8080/api/Usuarios/Agregar_Usuario",
+      "http://localhost:8080/api/Estudiantes/Agregar_Estudiante",
       datos
     );
     return response.data;
@@ -16,23 +16,16 @@ const enviarDatos = async (datos) => {
 export const EstudianteSlice = createSlice({
   name: "estudiantes",
   initialState: {
-    nombre: "",
-    apellido: "",
-    correo: "",
-    nombreUsuario: "",
-    telefono: "",
-    contraseña: "",
-    activo: false,
-    carrera: { idCarrera: "" },
-    rol: 1,
-    semestre: 0,
-    cursos: [],
+    list: [],
   },
   reducers: {
+    setEstudiantes: (state, action) => {
+      state.list = action.payload;
+    },
     activarEstudiante: (state, action) => {
       console.log("Activando estudiante", action.payload);
 
-      const estudiante = state.find(
+      const estudiante = state.list.find(
         (estudiante) => estudiante.id === action.payload
       );
       if (estudiante) {
@@ -50,5 +43,9 @@ export const EstudianteSlice = createSlice({
   },
 });
 
-export const { activarEstudiante, guardarEstudiante } = EstudianteSlice.actions;
+export const {
+  setEstudiantes,
+  activarEstudiante,
+  guardarEstudiante,
+} = EstudianteSlice.actions;
 export default EstudianteSlice.reducer;

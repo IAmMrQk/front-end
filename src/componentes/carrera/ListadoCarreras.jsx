@@ -1,17 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CartaCarrera from "./cartaCarrera";
 import ModalCrearCarrera from "../administracion-componentes/carrera-admin/ModalCrearCarrera";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { setCarrera } from "../../app/slices/CarreraSlice";
 
 export default function ListadoCarreras() {
-  const carreras = useSelector((state) => state.carrera);
-
+  const carreras = useSelector((state) => state.carrera.list);
+  const disparador = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
 
   const crearnuevaCarrera = () => {
     console.log("Crear nueva carrera");
     setModalOpen(true);
   };
+
+  useEffect(() => {
+    const obtenerCarreras = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/api/Carreras/Lista_Carreras"
+        );
+        disparador(setCarrera(response.data));
+      } catch (error) {
+        console.error("Error al obtener las carreras", error);
+      }
+    };
+
+    obtenerCarreras();
+  }, []);
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">

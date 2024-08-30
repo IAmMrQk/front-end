@@ -12,8 +12,21 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import { getItem } from "../utils/Services";
 
 export default function Registro() {
+  let navigate = useNavigate();
+  useEffect(() => {
+    const user = getItem("user");
+    if (user != null) {
+      navigate("/Estudiantes"); // Redireccionar si no hay usuario
+    }
+  }, [navigate]);
+
+  // Hook para navegar entre rutas
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [tipoUsuario, setTipoUsuario] = useState("estudiante");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [estudiante, setEstudiante] = useState({
@@ -27,33 +40,22 @@ export default function Registro() {
     carrera: "",
     matricula: "",
   });
-
-  // Estados para manejar el Dialog
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const navigate = useNavigate();
-
-  const renderizarComponentes = () => {
-    switch (tipoUsuario) {
-      case "estudiante":
-        return <FormUsuario tipoUsuario="estudiante" />;
-      case "profesor":
-        return <FormUsuario tipoUsuario="profesor" />;
-      default:
-        return null;
-    }
+  // Función para cerrar el Dialog
+  const handleDialogClose = () => {
+    setDialogOpen(false);
   };
 
+  //Funcion para seleccionar el tipo de usuario
   const seleccionTipo = (evento) => {
     setTipoUsuario(evento.target.value);
   };
 
+  //Funcion para manejar el modal
   const handleModalSubmit = (cedula) => {
     fetchEstudiante(cedula);
   };
 
+  //funcion para valida existencia  de estudiante en la base de datos de la universidad
   const fetchEstudiante = async (cedula) => {
     setIsLoading(true);
     setDialogOpen(true);
@@ -63,6 +65,7 @@ export default function Registro() {
       const response = await axios.get(
         `http://localhost:8080/api/dataUniversidad/existencia?cedula=${cedula}`
       );
+      navigate("/Login");
       setEstudiante(response.data);
       validateEstudiante(response.data);
     } catch (error) {
@@ -73,6 +76,7 @@ export default function Registro() {
     }
   };
 
+  // Función para validar si el estudiante está matriculado
   const validateEstudiante = (estudiante) => {
     setIsLoading(false);
     if (estudiante.matricula) {
@@ -87,10 +91,12 @@ export default function Registro() {
     }
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
+  // Función para renderizar los componentes según el tipo de usuario
+  const renderizarComponentes = () => {
+    return <FormUsuario tipoUsuario={tipoUsuario} estudianteDB={estudiante} />;
   };
 
+  // Efecto para abrir el Modal si el tipo de usuario es estudiante
   useEffect(() => {
     if (tipoUsuario === "estudiante") {
       setIsModalOpen(true);
@@ -118,7 +124,9 @@ export default function Registro() {
                 />
                 <label
                   className={`ml-2 cursor-pointer text-gray-700 ${
-                    tipoUsuario === "estudiante" ? "font-semibold text-blue-600" : ""
+                    tipoUsuario === "estudiante"
+                      ? "font-semibold text-blue-600"
+                      : ""
                   }`}
                   htmlFor="estudiante"
                 >
@@ -138,7 +146,9 @@ export default function Registro() {
                 />
                 <label
                   className={`ml-2 cursor-pointer text-gray-700 ${
-                    tipoUsuario === "profesor" ? "font-semibold text-blue-600" : ""
+                    tipoUsuario === "profesor"
+                      ? "font-semibold text-blue-600"
+                      : ""
                   }`}
                   htmlFor="profesor"
                 >
@@ -147,19 +157,15 @@ export default function Registro() {
               </div>
             </form>
           </div>
-          <div className="flex justify-center">
-            {renderizarComponentes()}
-          </div>
+          <div className="flex justify-center">{renderizarComponentes()}</div>
         </div>
       </main>
-
       {/* Modal */}
       <ModalCedula
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
       />
-
       {/* Dialog */}
       <Dialog open={dialogOpen} onClose={handleDialogClose}>
         <DialogContent>
