@@ -42,7 +42,7 @@ export default function Registro() {
       case "profesor":
         return <FormUsuario tipoUsuario="profesor" />;
       default:
-        break;
+        return null;
     }
   };
 
@@ -51,7 +51,6 @@ export default function Registro() {
   };
 
   const handleModalSubmit = (cedula) => {
-    console.log("Cédula ingresada:", cedula);
     fetchEstudiante(cedula);
   };
 
@@ -101,50 +100,58 @@ export default function Registro() {
   }, [tipoUsuario]);
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen bg-blue-50">
       <NavRegister />
-      <form className="flex justify-center mb-6 mt-20">
-        <div className="m-2 flex items-center">
-          <input
-            className="form-radio h-5 w-5 text-blue-500 focus:ring-blue-500 cursor-pointer"
-            type="radio"
-            name="tipoUsuario"
-            value="estudiante"
-            id="estudiante"
-            checked={tipoUsuario === "estudiante"}
-            onChange={seleccionTipo}
-          />
-          <label
-            className={`ml-2 cursor-pointer text-gray-700 ${
-              tipoUsuario === "estudiante" ? "font-semibold" : ""
-            }`}
-            htmlFor="estudiante"
-          >
-            Estudiante
-          </label>
+      <main className="flex-grow flex justify-center items-center px-4">
+        <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex justify-center mb-6 mt-4">
+            <form className="flex flex-col sm:flex-row items-center">
+              <div className="m-2 flex items-center">
+                <input
+                  className="form-radio h-5 w-5 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                  type="radio"
+                  name="tipoUsuario"
+                  value="estudiante"
+                  id="estudiante"
+                  checked={tipoUsuario === "estudiante"}
+                  onChange={seleccionTipo}
+                />
+                <label
+                  className={`ml-2 cursor-pointer text-gray-700 ${
+                    tipoUsuario === "estudiante" ? "font-semibold text-blue-600" : ""
+                  }`}
+                  htmlFor="estudiante"
+                >
+                  Estudiante
+                </label>
+              </div>
+              <div className="m-2 flex items-center">
+                <input
+                  className="form-radio h-5 w-5 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                  type="radio"
+                  name="tipoUsuario"
+                  value="profesor"
+                  id="profesor"
+                  checked={tipoUsuario === "profesor"}
+                  onChange={seleccionTipo}
+                  disabled={true}
+                />
+                <label
+                  className={`ml-2 cursor-pointer text-gray-700 ${
+                    tipoUsuario === "profesor" ? "font-semibold text-blue-600" : ""
+                  }`}
+                  htmlFor="profesor"
+                >
+                  Profesor
+                </label>
+              </div>
+            </form>
+          </div>
+          <div className="flex justify-center">
+            {renderizarComponentes()}
+          </div>
         </div>
-        <div className="m-2 flex items-center">
-          <input
-            className="form-radio h-5 w-5 text-blue-500 focus:ring-blue-500 cursor-pointer"
-            type="radio"
-            name="tipoUsuario"
-            value="profesor"
-            id="profesor"
-            checked={tipoUsuario === "profesor"}
-            onChange={seleccionTipo}
-            disabled={true}
-          />
-          <label
-            className={`ml-2 cursor-pointer text-gray-700 ${
-              tipoUsuario === "profesor" ? "font-semibold" : ""
-            }`}
-            htmlFor="profesor"
-          >
-            Profesor
-          </label>
-        </div>
-      </form>
-      <div>{renderizarComponentes()}</div>
+      </main>
 
       {/* Modal */}
       <ModalCedula

@@ -47,7 +47,7 @@ export default function NavEstudiante() {
       </div>
       <div className="flex flex-grow justify-center space-x-4">
         <a
-          href="/"
+          href="/Estudiantes"
           className="bg-blue-800 py-1 px-3 rounded-xl hover:bg-blue-600"
         >
           Inicio
