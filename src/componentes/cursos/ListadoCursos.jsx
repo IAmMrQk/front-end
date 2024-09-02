@@ -6,13 +6,18 @@ import axios from "axios";
 import { setCurso } from "../../app/slices/CursosSlice";
 
 export default function ListadoCursos() {
-
   const [modalOpen, setModalOpen] = useState(false);
-  const disparador = useDispatch();
+  const [cursoEditar, setCursoEditar] = useState(null); // Estado para manejar el curso a editar
+  const dispatch = useDispatch();
   const cursos = useSelector((state) => state.cursos.list);
 
   const crearnuevaCurso = () => {
-    console.log("Crear nuevo curso");
+    setCursoEditar(null); // Asegúrate de que no hay un curso en modo edición
+    setModalOpen(true);
+  };
+
+  const editarCurso = (curso) => {
+    setCursoEditar(curso); // Establece el curso a editar
     setModalOpen(true);
   };
 
@@ -22,7 +27,7 @@ export default function ListadoCursos() {
         const response = await axios.get(
           "http://localhost:8080/api/Cursos/Lista_Cursos"
         );
-        disparador(setCurso(response.data));
+        dispatch(setCurso(response.data));
       } catch (error) {
         console.error("Error al obtener los cursos", error);
       }
@@ -42,17 +47,21 @@ export default function ListadoCursos() {
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
               onClick={crearnuevaCurso}
             >
-              Agregar Nuevo curso
+              Agregar Nuevo Curso
             </button>
           </div>
         </div>
       </header>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {cursos.map((curso) => (
-          <CartaCurso key={curso.idCurso} curso={curso} />
+          <CartaCurso key={curso.idCurso} curso={curso} onEditar={() => editarCurso(curso)} />
         ))}
       </div>
-      <ModalCrearCurso isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <ModalCrearCurso
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        cursoEditar={cursoEditar} // Pasar el curso a editar si existe
+      />
     </div>
   );
 }

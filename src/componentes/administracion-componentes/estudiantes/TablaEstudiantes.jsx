@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { activarEstudiante } from "../../../app/slices/EstudiantesSlice";
+import { actualizarEstudiante } from "../../../app/slices/EstudiantesSlice";
 import { FaArrowsRotate } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@mui/material";
@@ -8,16 +8,25 @@ import axios from "axios";
 
 export default function TablaEstudiantes() {
   const estudiantes = useSelector((state) => state.estudiantes.list);
-  const disparador = useDispatch();
+  const dispatch = useDispatch();
   const [openDialog, setOpenDialog] = useState(false);
 
   const handleToggleActive = (id) => {
     setOpenDialog(true);
+    setTimeout(async () => {
+      try {
+        const response = await axios.post(
+          `http://localhost:8080/api/Estudiantes/invertirMatricula/${id}`
+        );
 
-    setTimeout(() => {
-      setOpenDialog(false);
-      console.log(`Toggling active status for student with id: ${id}`);
-      disparador(activarEstudiante(id));
+        dispatch(
+          actualizarEstudiante({ id, matricula: response.data.matricula })
+        );
+      } catch (error) {
+        console.error("Error al actualizar el estado de matrícula", error);
+      } finally {
+        setOpenDialog(false);
+      }
     }, 3000);
   };
 
@@ -27,13 +36,18 @@ export default function TablaEstudiantes() {
         const response = await axios.get(
           "http://localhost:8080/api/Estudiantes/Lista_Estudiantes"
         );
-        disparador(setEstudiantes(response.data));
+        dispatch(setEstudiantes(response.data));
       } catch (error) {
         console.error(error);
       }
     };
     fetchEstudiantes();
-  }, [disparador]);
+  }, [dispatch]);
+
+  // Filtrar los estudiantes para mostrar solo los que tienen rol 'ESTUDIANTE'
+  const estudiantesFiltrados = estudiantes.filter(
+    (estudiante) => estudiante.rol === "ESTUDIANTE"
+  );
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
@@ -75,13 +89,10 @@ export default function TablaEstudiantes() {
               <th className="px-4 py-3 border-b border-gray-300 text-left">
                 Semestre
               </th>
-              <th className="px-4 py-3 border-b border-gray-300 text-left">
-                Cursos
-              </th>
             </tr>
           </thead>
           <tbody className="text-gray-800">
-            {estudiantes.map((estudiante) => (
+            {estudiantesFiltrados.map((estudiante) => (
               <tr
                 key={estudiante.id}
                 className="hover:bg-gray-50 transition-colors"
@@ -105,10 +116,10 @@ export default function TablaEstudiantes() {
                   {estudiante.telefono}
                 </td>
                 <td className="px-4 py-3 border-b border-gray-300 flex items-center">
-                  <p>{estudiante.activo ? "Sí" : "No"}</p>
+                  <p>{estudiante.matricula ? "Sí" : "No"}</p>
                   <button
                     className={`p-2 rounded-xl m-2 ${
-                      estudiante.activo
+                      estudiante.matricula
                         ? "bg-red-500 text-white"
                         : "bg-green-700 text-white"
                     }`}
@@ -127,11 +138,6 @@ export default function TablaEstudiantes() {
                 </td>
                 <td className="px-4 py-3 border-b border-gray-300">
                   {estudiante.semestre}
-                </td>
-                <td className="px-4 py-3 border-b border-gray-300">
-                  {estudiante.cursos.length > 0
-                    ? estudiante.cursos.join(", ")
-                    : "Sin agregar"}
                 </td>
               </tr>
             ))}

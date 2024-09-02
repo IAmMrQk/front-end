@@ -38,6 +38,8 @@ export default function Cursos() {
     (curso) => curso.semestreCurso > semestre
   );
 
+
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Barra de navegación */}

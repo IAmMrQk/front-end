@@ -42,6 +42,15 @@ export default function NavEstudiante() {
         >
           Contactos
         </a>
+        {/* Mostrar el enlace Admin solo si el usuario es ADMINISTRADOR */}
+        {user?.rol === 'ADMINISTRADOR' && (
+          <a
+            href="/Admin"
+            className="bg-blue-800 py-1 px-3 rounded-xl hover:bg-blue-600"
+          >
+            Admin
+          </a>
+        )}
       </div>
       <div className="flex items-center space-x-4">
         {user && (

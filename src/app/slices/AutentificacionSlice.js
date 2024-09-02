@@ -16,8 +16,10 @@ const autentificacionSlice = createSlice({
       state.user = action.payload.user;
       state.error = null;
       state.status = "succeeded";
+      
       setItem("user", state.user);
-      console.log("Usuario logeado", state.user.nombreUsuario);
+      console.log("Usuario logeado", state.user.usuario);
+      console.log(JSON.stringify(state.user).length);
     },
     cerrarSesion: (state) => {
       state.user = null;

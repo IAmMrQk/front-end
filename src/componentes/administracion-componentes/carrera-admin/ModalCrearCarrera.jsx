@@ -1,29 +1,59 @@
-import { useState } from "react";
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { agregarCarrera } from "../../../app/slices/CarreraSlice";
+import axios from "axios";
+import { agregarCarrera, actualizarCarrera } from "../../../app/slices/CarreraSlice";
 
-export default function ModalCrearCarrera({ isOpen, onClose }) {
-  const disparador = useDispatch();
+export default function ModalCrearCarrera({ isOpen, onClose, carrera }) {
+  const dispatch = useDispatch();
 
-  const [carreras, setCarreras] = useState({
+  const [carreraData, setCarreraData] = useState({
     nombreCarrera: "",
-    duracion: "",
-    descripcion: "",
-    facultad: "",
-    nivel: "",
+    cantidadSemestre: "",
+    cursosIntegrados: [],
   });
 
+  useEffect(() => {
+    if (carrera) {
+      setCarreraData(carrera); // Cargar los datos de la carrera en edición
+    } else {
+      setCarreraData({
+        nombreCarrera: "",
+        cantidadSemestre: "",
+        cursosIntegrados: [],
+      });
+    }
+  }, [carrera]);
+
   const obtenerDatos = (e) => {
-    setCarreras({
-      ...carreras,
+    setCarreraData({
+      ...carreraData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    disparador(agregarCarrera(carreras));
-    onClose();
+    try {
+      if (carrera) {
+        // Lógica para actualizar una carrera existente
+        const response = await axios.put(
+          `http://localhost:8080/api/Carreras/Editar_Carrera/${carrera.idCarrera}`,
+          carreraData
+        );
+        dispatch(actualizarCarrera(response.data)); // Actualiza la lista completa (puedes ajustar esto según la lógica de actualización)
+      } else {
+        // Lógica para crear una nueva carrera
+        const response = await axios.post(
+          "http://localhost:8080/api/Carreras/Guardar_Carrera",
+          carreraData
+        );
+        dispatch(agregarCarrera(response.data));
+      }
+      onClose();
+    } catch (error) {
+      console.error("Error al guardar carrera:", error);
+    }
   };
 
   if (!isOpen) return null;
@@ -33,7 +63,7 @@ export default function ModalCrearCarrera({ isOpen, onClose }) {
       <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">
-            Crear Nueva Carrera
+            {carrera ? "Editar Carrera" : "Crear Nueva Carrera"}
           </h2>
           <button
             onClick={onClose}
@@ -50,7 +80,7 @@ export default function ModalCrearCarrera({ isOpen, onClose }) {
             <input
               type="text"
               name="nombreCarrera"
-              value={carreras.nombreCarrera}
+              value={carreraData.nombreCarrera}
               onChange={obtenerDatos}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
               required
@@ -59,58 +89,19 @@ export default function ModalCrearCarrera({ isOpen, onClose }) {
 
           <div className="mb-4">
             <label className="block text-gray-700 font-medium mb-2">
-              Duración
+              Cantidad de Semestres
             </label>
             <input
-              type="text"
-              name="duracion"
-              value={carreras.duracion}
+              type="number"
+              name="cantidadSemestre"
+              value={carreraData.cantidadSemestre}
               onChange={obtenerDatos}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-2">
-              Descripción
-            </label>
-            <textarea
-              name="descripcion"
-              value={carreras.descripcion}
-              onChange={obtenerDatos}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-2">
-              Facultad
-            </label>
-            <input
-              type="text"
-              name="facultad"
-              value={carreras.facultad}
-              onChange={obtenerDatos}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">
-              Nivel
-            </label>
-            <input
-              type="text"
-              name="nivel"
-              value={carreras.nivel}
-              onChange={obtenerDatos}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
-          </div>
+          {/* Aquí puedes agregar campos adicionales o ajustes necesarios */}
 
           <div className="flex justify-end">
             <button
@@ -124,7 +115,7 @@ export default function ModalCrearCarrera({ isOpen, onClose }) {
               type="submit"
               className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg"
             >
-              Guardar
+              {carrera ? "Actualizar" : "Guardar"}
             </button>
           </div>
         </form>

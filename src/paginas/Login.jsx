@@ -16,9 +16,7 @@ export default function Login() {
     }
   }, [navigate]);
 
-
   const dispatch = useDispatch();
- 
 
   const [credenciales, setCredenciales] = useState({
     nombreUsuario: "",
@@ -44,16 +42,26 @@ export default function Login() {
   const inicioSesion = async (e) => {
     e.preventDefault();
     const { nombreUsuario, contraseña } = credenciales;
+
     try {
       const respuesta = await axios.post(
         "http://localhost:8080/api/Estudiantes/estudiante_Login",
         { nombreUsuario, contraseña }
       );
-      setSnackbarMessage("Inicio de sesión exitoso");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-      dispatch(iniciarSesion({ user: respuesta.data }));
-      navigate("/Estudiantes");
+
+      if (respuesta.data.matricula) {
+        setSnackbarMessage("Inicio de sesión exitoso");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        dispatch(iniciarSesion({ user: respuesta.data }));
+        navigate("/Estudiantes");
+      } else {
+        setSnackbarMessage(
+          "Usuario no matriculado, contactarse con Administracion"
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      }
     } catch (error) {
       setSnackbarMessage("Usuario o contraseña incorrectos");
       setSnackbarSeverity("error");

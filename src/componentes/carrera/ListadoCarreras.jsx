@@ -9,9 +9,15 @@ export default function ListadoCarreras() {
   const carreras = useSelector((state) => state.carrera.list);
   const disparador = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
+  const [carreraEnEdicion, setCarreraEnEdicion] = useState(null); // Nuevo estado
 
   const crearnuevaCarrera = () => {
-    console.log("Crear nueva carrera");
+    setCarreraEnEdicion(null); // Limpiar carreraEnEdicion para creación
+    setModalOpen(true);
+  };
+
+  const editarCarrera = (carrera) => {
+    setCarreraEnEdicion(carrera); // Establecer la carrera en edición
     setModalOpen(true);
   };
 
@@ -50,12 +56,18 @@ export default function ListadoCarreras() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {carreras.map((carrera) => (
-          <CartaCarrera key={carrera.idCarrera} carrera={carrera} />
+          <CartaCarrera
+            key={carrera.idCarrera}
+            carrera={carrera}
+            onEditar={() => editarCarrera(carrera)} // Pasar la función editarCarrera
+          />
         ))}
       </div>
+
       <ModalCrearCarrera
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
+        carrera={carreraEnEdicion} // Pasar la carrera en edición al modal
       />
     </div>
   );

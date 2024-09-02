@@ -11,6 +11,7 @@ import {
   CircularProgress,
   DialogActions,
   Button,
+  Snackbar,
 } from "@mui/material";
 import { getItem } from "../utils/Services";
 
@@ -23,7 +24,6 @@ export default function Registro() {
     }
   }, [navigate]);
 
-  // Hook para navegar entre rutas
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -40,22 +40,22 @@ export default function Registro() {
     carrera: "",
     matricula: "",
   });
-  // Función para cerrar el Dialog
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const handleDialogClose = () => {
     setDialogOpen(false);
   };
 
-  //Funcion para seleccionar el tipo de usuario
   const seleccionTipo = (evento) => {
     setTipoUsuario(evento.target.value);
   };
 
-  //Funcion para manejar el modal
   const handleModalSubmit = (cedula) => {
     fetchEstudiante(cedula);
   };
 
-  //funcion para valida existencia  de estudiante en la base de datos de la universidad
   const fetchEstudiante = async (cedula) => {
     setIsLoading(true);
     setDialogOpen(true);
@@ -65,18 +65,17 @@ export default function Registro() {
       const response = await axios.get(
         `http://localhost:8080/api/dataUniversidad/existencia?cedula=${cedula}`
       );
-      navigate("/Login");
       setEstudiante(response.data);
       validateEstudiante(response.data);
     } catch (error) {
       console.error("Error fetching estudiante:", error);
       setDialogMessage("Error al validar el estudiante.");
-      navigate("/");
       setIsLoading(false);
+      setSnackbarMessage("Cédula no válida. Por favor, intente de nuevo.");
+      setSnackbarOpen(true);
     }
   };
 
-  // Función para validar si el estudiante está matriculado
   const validateEstudiante = (estudiante) => {
     setIsLoading(false);
     if (estudiante.matricula) {
@@ -87,16 +86,15 @@ export default function Registro() {
       setDialogMessage(
         "El estudiante no se encuentra matriculado en la base de datos"
       );
-      setTimeout(() => navigate("/"), 2000); // Navega después de 2 segundos
+      setSnackbarMessage("Estudiante no matriculado.");
+      setSnackbarOpen(true);
     }
   };
 
-  // Función para renderizar los componentes según el tipo de usuario
   const renderizarComponentes = () => {
     return <FormUsuario tipoUsuario={tipoUsuario} estudianteDB={estudiante} />;
   };
 
-  // Efecto para abrir el Modal si el tipo de usuario es estudiante
   useEffect(() => {
     if (tipoUsuario === "estudiante") {
       setIsModalOpen(true);
@@ -104,6 +102,11 @@ export default function Registro() {
       setIsModalOpen(false);
     }
   }, [tipoUsuario]);
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+    setIsModalOpen(true); // Reabrir el modal si hubo un error en la validación
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-blue-50">
@@ -182,12 +185,22 @@ export default function Registro() {
         </DialogContent>
         <DialogActions>
           {!isLoading && (
-            <Button onClick={handleDialogClose} color="primary">
-              Cerrar
-            </Button>
+            <div>
+              <Button onClick={handleDialogClose} color="primary">
+                Cerrar
+              </Button>
+            </div>
           )}
         </DialogActions>
       </Dialog>
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      />
     </div>
   );
 }

@@ -22,19 +22,13 @@ export const EstudianteSlice = createSlice({
     setEstudiantes: (state, action) => {
       state.list = action.payload;
     },
-    activarEstudiante: (state, action) => {
-      console.log("Activando estudiante", action.payload);
-
-      const estudiante = state.list.find(
-        (estudiante) => estudiante.id === action.payload
-      );
+    actualizarEstudiante: (state, action) => {
+      const { id, matricula } = action.payload;
+      const estudiante = state.list.find((e) => e.idUsuario === id);
       if (estudiante) {
-        estudiante.activo = !estudiante.activo;
+        estudiante.matricula = matricula;
       }
-
-      console.log("Estudiante activado" + estudiante);
     },
-
     guardarEstudiante: (state, action) => {
       console.log("Guardando estudiante", action.payload);
       const repuesta = enviarDatos(action.payload);
@@ -43,9 +37,6 @@ export const EstudianteSlice = createSlice({
   },
 });
 
-export const {
-  setEstudiantes,
-  activarEstudiante,
-  guardarEstudiante,
-} = EstudianteSlice.actions;
+export const { setEstudiantes, actualizarEstudiante, guardarEstudiante } =
+  EstudianteSlice.actions;
 export default EstudianteSlice.reducer;

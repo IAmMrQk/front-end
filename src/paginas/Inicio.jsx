@@ -1,29 +1,11 @@
-import { useDispatch } from "react-redux";
 import Footer from "../componentes/layout/Footer";
 import NavPrincipal from "../componentes/layout/NavPrincipal";
-import { useEffect } from "react";
-import { setCarrera } from "../app/slices/CarreraSlice";
-import axios from "axios";
+
 
 export const Inicio = () => {
-  const dispatch = useDispatch();
+ 
 
-  useEffect(() => {
-    const obtenerCarreras = async () => {
-      console.log("Obteniendo modulos");
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/api/Carreras/Lista_Carreras"
-        );
-        console.log("modulos obtenidos");
-        dispatch(setCarrera(response.data));
-      } catch (error) {
-        console.error("Error al obtener los modulos", error);
-      }
-    };
-
-    obtenerCarreras();
-  }, []);
+  
 
   return (
     <div className="flex flex-col min-h-screen">

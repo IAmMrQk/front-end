@@ -2,7 +2,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 const ProtectedRouteAdmin = ({ user }) => {
-  if (!user || user.rol !== "ADMINISTRADOR") {
+  if (!user || !user.rol == "ADMINISTRADOR") {
     return <Navigate to={"/"} replace />;
   }
   return <Outlet />;

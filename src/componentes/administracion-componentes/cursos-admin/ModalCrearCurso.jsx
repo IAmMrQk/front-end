@@ -1,17 +1,30 @@
-import { useState } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { agregarCurso } from "../../../app/slices/CursosSlice";
+import { agregarCurso, actualizarCurso } from "../../../app/slices/CursosSlice";
 
-export default function ModalCrearCurso({ isOpen, onClose }) {
-  const disparador = useDispatch();
+export default function ModalCrearCurso({ isOpen, onClose, cursoEditar }) {
+  const dispatch = useDispatch();
 
   const [curso, setCurso] = useState({
     nombreCurso: "",
-    fechaInicio: "",
-    fechaFinalizacion: "",
     semestreCurso: "",
     contenido: "",
   });
+
+  // Efecto para cargar datos si se está editando un curso
+  useEffect(() => {
+    if (cursoEditar) {
+      setCurso(cursoEditar);
+    } else {
+      // Reinicia el formulario si no hay curso a editar
+      setCurso({
+        nombreCurso: "",
+        semestreCurso: "",
+        contenido: "",
+      });
+    }
+  }, [cursoEditar]);
 
   const obtenerDatos = (e) => {
     const { name, value } = e.target;
@@ -23,7 +36,15 @@ export default function ModalCrearCurso({ isOpen, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    disparador(agregarCurso(curso));
+
+    if (cursoEditar) {
+      // Actualizar curso
+      dispatch(actualizarCurso(curso));
+    } else {
+      // Crear nuevo curso
+      dispatch(agregarCurso(curso));
+    }
+
     onClose();
   };
 
@@ -34,7 +55,7 @@ export default function ModalCrearCurso({ isOpen, onClose }) {
       <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">
-            Crear Nuevo Curso
+            {cursoEditar ? "Editar Curso" : "Crear Nuevo Curso"}
           </h2>
           <button
             onClick={onClose}
@@ -52,34 +73,6 @@ export default function ModalCrearCurso({ isOpen, onClose }) {
               type="text"
               name="nombreCurso"
               value={curso.nombreCurso}
-              onChange={obtenerDatos}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-2">
-              Fecha de Inicio
-            </label>
-            <input
-              type="date"
-              name="fechaInicio"
-              value={curso.fechaInicio}
-              onChange={obtenerDatos}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-2">
-              Fecha de Finalización
-            </label>
-            <input
-              type="date"
-              name="fechaFinalizacion"
-              value={curso.fechaFinalizacion}
               onChange={obtenerDatos}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
               required
@@ -125,7 +118,7 @@ export default function ModalCrearCurso({ isOpen, onClose }) {
               type="submit"
               className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg"
             >
-              Guardar
+              {cursoEditar ? "Actualizar" : "Guardar"}
             </button>
           </div>
         </form>

@@ -1,12 +1,12 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
 import { guardarEstudiante } from "../../app/slices/EstudiantesSlice";
-import { getItem } from "../../utils/Services";
+import axios from "axios";
+import { useDispatch } from "react-redux";
 
 export default function FormUsuario({ tipoUsuario, estudianteDB }) {
-  const dispatch = useDispatch();
-  const carreras = getItem("carreras");
+  const disparador = useDispatch();
+  const [carreras, setCarrera] = useState("");
   const [verContraseña, setVerContraseña] = useState(false);
   const [errorContraseña, setErrorContraseña] = useState("");
   const [errorSemestre, setErrorSemestre] = useState("");
@@ -14,11 +14,11 @@ export default function FormUsuario({ tipoUsuario, estudianteDB }) {
     nombre: "",
     apellido: "",
     correo: "",
-    nombreUsuario: "",
+    usuario: "",
     telefono: "",
     cedula: "",
     contraseña: "",
-    activo: false,
+    estado: false,
     rol: 1,
     carrera: { idCarrera: "" },
     semestre: tipoUsuario === "estudiante" ? "" : undefined,
@@ -98,23 +98,40 @@ export default function FormUsuario({ tipoUsuario, estudianteDB }) {
         },
       };
       console.log("Estudiante a guardar", estudiante);
-      dispatch(guardarEstudiante(estudiante));
+      disparador(guardarEstudiante(estudiante));
     } else {
       console.log("Error en la contraseña o carrera" + id);
     }
   };
 
+
+
   useEffect(() => {
+
+    const obtenerCarreras = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/api/Carreras/Lista_Carreras"
+        );
+
+        setCarrera(response.data);
+      } catch (error) {
+        console.error("Error al obtener las carreras", error);
+      }
+    };
+
+    obtenerCarreras();
+
     if (estudianteDB) {
       setFormEstudiante({
         nombre: estudianteDB.nombre || "",
         apellido: estudianteDB.apellido || "",
         correo: estudianteDB.correo || "",
-        nombreUsuario: "",
+        usuario: "",
         telefono: estudianteDB.telefono || "",
         cedula: estudianteDB.cedula || "",
         contraseña: "",
-        activo: false,
+        estado: false,
         rol: 1,
         carrera: { idCarrera: estudianteDB.carrera || "" },
         semestre:
@@ -133,8 +150,8 @@ export default function FormUsuario({ tipoUsuario, estudianteDB }) {
           <label className="block text-gray-700">Nombre de Usuario</label>
           <input
             type="text"
-            name="nombreUsuario"
-            value={formEstudiante.nombreUsuario}
+            name="usuario"
+            value={formEstudiante.usuario}
             onChange={manejoDatos}
             className="mt-1 block w-full px-2 py-1 border border-blue-400 rounded-md bg-blue-50 text-blue-800 focus:outline-none focus:ring focus:border-blue-500"
           />

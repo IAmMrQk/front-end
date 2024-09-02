@@ -7,6 +7,10 @@ export const setItem = (key, value) => {
     localStorage.setItem(key, serializedValue);
   } catch (error) {
     console.error("Error al guardar en localStorage:", error);
+    if (error.name === 'QuotaExceededError') {
+      console.error("No se pudo guardar el usuario en localStorage: Espacio insuficiente");
+      // Implementar lógica adicional para manejar el error, como limpiar datos antiguos
+  }
   }
 };
 
@@ -30,4 +34,6 @@ export const removeItem = (key) => {
     console.error("Error al eliminar de localStorage:", error);
   }
 };
+
+
 

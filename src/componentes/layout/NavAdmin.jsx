@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import BtnLogo from "./BtnLogo";
 import { FaSignOutAlt } from "react-icons/fa";
 import { Avatar } from "@mui/material";
+import { removeItem } from "../../utils/Services";
 
 export default function NavAdmin() {
 
@@ -10,6 +11,7 @@ export default function NavAdmin() {
   let navigate = useNavigate();
 
   const cerrarSesion = () => {
+    removeItem("user");
     navigate("/");
   };
 
