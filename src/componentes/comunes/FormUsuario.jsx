@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { guardarEstudiante } from "../../app/slices/EstudiantesSlice";
 import axios from "axios";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export default function FormUsuario({ tipoUsuario, estudianteDB }) {
   const disparador = useDispatch();
+  let navigate = useNavigate();
   const [carreras, setCarrera] = useState("");
   const [verContraseña, setVerContraseña] = useState(false);
   const [errorContraseña, setErrorContraseña] = useState("");
@@ -99,6 +101,7 @@ export default function FormUsuario({ tipoUsuario, estudianteDB }) {
       };
       console.log("Estudiante a guardar", estudiante);
       disparador(guardarEstudiante(estudiante));
+      navigate("/Login");
     } else {
       console.log("Error en la contraseña o carrera" + id);
     }

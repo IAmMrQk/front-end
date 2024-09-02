@@ -83,7 +83,7 @@ export default function Login() {
         dispatch(iniciarSesion({ user: usuarioTransformado }));
         navigate("/Estudiantes");
       } else {
-        setSnackbarMessage("Usuario no matriculado, contactarse con Administración");
+        setSnackbarMessage("Usuario no Activado, contactarse con Administración");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }

@@ -123,7 +123,7 @@ export default function TablaEstudiantes() {
                         ? "bg-red-500 text-white"
                         : "bg-green-700 text-white"
                     }`}
-                    onClick={() => handleToggleActive(estudiante.id)}
+                    onClick={() => handleToggleActive(estudiante.idUsuario)}
                   >
                     <FaArrowsRotate size={20} />
                   </button>
