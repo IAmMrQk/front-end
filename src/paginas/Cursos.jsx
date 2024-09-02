@@ -4,10 +4,12 @@ import SemestreSection from "../componentes/cursos/SemestreSection";
 import { getItem } from "../utils/Services";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Cursos() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [cursos, setCursos] = useState([]);
 
   useEffect(() => {
     const storedUser = getItem("user");
@@ -15,17 +17,31 @@ export default function Cursos() {
       navigate("/"); // Redireccionar si no hay usuario
     } else {
       setUser(storedUser);
+      fetchCursos(storedUser.carrera.listaCursos.map((curso) => curso.idCurso));
     }
   }, [navigate]);
 
+  const fetchCursos = async (cursosIds) => {
+
+    console.log(cursosIds);
+    try {
+      // Realizar la solicitud al backend para obtener los cursos por IDs
+      const response = await axios.post(
+        `http://localhost:8080/api/Cursos/cursosPorIds`, cursosIds
+      );
+      setCursos(response.data);
+    } catch (error) {
+      console.error("Error al obtener los cursos:", error);
+    }
+  };
+
   // Mostrar un componente de carga mientras se verifica el usuario
-  if (user === null) {
+  if (user === null || cursos.length === 0) {
     return null; // También puedes retornar un componente de carga si lo prefieres
   }
 
   const carrera = user.carrera.nombreCarrera || "n/a";
   const semestre = user.semestre || "n/a";
-  const cursos = user.carrera.cursosIntegrados || [];
 
   // Filtrar los cursos según el semestre
   const cursosAnteriores = cursos.filter(
@@ -37,8 +53,6 @@ export default function Cursos() {
   const cursosPosteriores = cursos.filter(
     (curso) => curso.semestreCurso > semestre
   );
-
-
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">

@@ -12,7 +12,7 @@ export default function Login() {
   useEffect(() => {
     const user = getItem("user");
     if (user != null) {
-      navigate("/Estudiantes"); // Redireccionar si no hay usuario
+      navigate("/Estudiantes"); // Redireccionar si ya hay usuario
     }
   }, [navigate]);
 
@@ -49,20 +49,46 @@ export default function Login() {
         { nombreUsuario, contraseña }
       );
 
-      if (respuesta.data.matricula) {
+      console.log("Respuesta del servidor:", respuesta.data); // Añade un log para verificar la respuesta
+
+      const { nombre, apellido, usuario, correo, rol, carrera, matricula, semestre } = respuesta.data;
+
+      if (matricula) {
+        // Transformar carrera a CarreraDTO
+        const carreraDTO = {
+          idCarrera: carrera.idCarrera,
+          nombreCarrera: carrera.nombreCarrera,
+          listaCursos: carrera.listaCursos.map((curso) => ({
+            idCurso: curso.idCurso,
+            nombreCurso: curso.nombreCurso,
+          })),
+        };
+
+        // Crear el usuario transformado
+        const usuarioTransformado = {
+          nombre,
+          apellido,
+          usuario,
+          correo,
+          rol,
+          carrera: carreraDTO,
+          matricula,
+          semestre, // Agrega el semestre aquí
+        };
+
+        // Guardar el usuario transformado en el estado y en el localStorage
         setSnackbarMessage("Inicio de sesión exitoso");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        dispatch(iniciarSesion({ user: respuesta.data }));
+        dispatch(iniciarSesion({ user: usuarioTransformado }));
         navigate("/Estudiantes");
       } else {
-        setSnackbarMessage(
-          "Usuario no matriculado, contactarse con Administracion"
-        );
+        setSnackbarMessage("Usuario no matriculado, contactarse con Administración");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
     } catch (error) {
+      console.error("Error durante el inicio de sesión:", error.response?.data); // Añade un log para el error
       setSnackbarMessage("Usuario o contraseña incorrectos");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
