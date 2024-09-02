@@ -2,7 +2,10 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import axios from "axios";
-import { agregarCarrera, actualizarCarrera } from "../../../app/slices/CarreraSlice";
+import {
+  agregarCarrera,
+  actualizarCarrera,
+} from "../../../app/slices/CarreraSlice";
 
 export default function ModalCrearCarrera({ isOpen, onClose, carrera }) {
   const dispatch = useDispatch();
@@ -13,17 +16,30 @@ export default function ModalCrearCarrera({ isOpen, onClose, carrera }) {
     cursosIntegrados: [],
   });
 
+  const [cursosDisponibles, setCursosDisponibles] = useState([]);
+  const [cursosSeleccionados, setCursosSeleccionados] = useState([]);
+
   useEffect(() => {
+    if (isOpen) {
+      // Obtener la lista de cursos disponibles
+      axios
+        .get("http://localhost:8080/api/Cursos/Lista_Cursos")
+        .then((response) => setCursosDisponibles(response.data))
+        .catch((error) => console.error("Error al obtener cursos:", error));
+    }
+
     if (carrera) {
-      setCarreraData(carrera); // Cargar los datos de la carrera en edición
+      setCarreraData(carrera);
+      setCursosSeleccionados(carrera.cursosIntegrados);
     } else {
       setCarreraData({
         nombreCarrera: "",
         cantidadSemestre: "",
         cursosIntegrados: [],
       });
+      setCursosSeleccionados([]);
     }
-  }, [carrera]);
+  }, [carrera, isOpen]);
 
   const obtenerDatos = (e) => {
     setCarreraData({
@@ -32,21 +48,40 @@ export default function ModalCrearCarrera({ isOpen, onClose, carrera }) {
     });
   };
 
+  const handleCursoAgregar = (curso) => {
+    setCursosSeleccionados([...cursosSeleccionados, curso]);
+    setCursosDisponibles(
+      cursosDisponibles.filter((c) => c.idCurso !== curso.idCurso)
+    );
+  };
+
+  const handleCursoEliminar = (curso) => {
+    setCursosDisponibles([...cursosDisponibles, curso]);
+    setCursosSeleccionados(
+      cursosSeleccionados.filter((c) => c.idCurso !== curso.idCurso)
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const dataToSubmit = {
+        ...carreraData,
+        cursosIntegrados: cursosSeleccionados,
+      };
+
       if (carrera) {
         // Lógica para actualizar una carrera existente
         const response = await axios.put(
           `http://localhost:8080/api/Carreras/Editar_Carrera/${carrera.idCarrera}`,
-          carreraData
+          dataToSubmit
         );
-        dispatch(actualizarCarrera(response.data)); // Actualiza la lista completa (puedes ajustar esto según la lógica de actualización)
+        dispatch(actualizarCarrera(response.data));
       } else {
         // Lógica para crear una nueva carrera
         const response = await axios.post(
           "http://localhost:8080/api/Carreras/Guardar_Carrera",
-          carreraData
+          dataToSubmit
         );
         dispatch(agregarCarrera(response.data));
       }
@@ -101,7 +136,51 @@ export default function ModalCrearCarrera({ isOpen, onClose, carrera }) {
             />
           </div>
 
-          {/* Aquí puedes agregar campos adicionales o ajustes necesarios */}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">
+              Cursos Disponibles
+            </label>
+            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg">
+              {cursosDisponibles.map((curso) => (
+                <div
+                  key={curso.idCurso}
+                  className="flex items-center justify-between p-2 border-b border-gray-200"
+                >
+                  <span>{curso.nombreCurso}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCursoAgregar(curso)}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    Agregar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">
+              Cursos Seleccionados
+            </label>
+            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg">
+              {cursosSeleccionados.map((curso) => (
+                <div
+                  key={curso.idCurso}
+                  className="flex items-center justify-between p-2 border-b border-gray-200"
+                >
+                  <span>{curso.nombreCurso}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCursoEliminar(curso)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="flex justify-end">
             <button
